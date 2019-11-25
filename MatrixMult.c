@@ -40,15 +40,18 @@ int verify(volatile __uint64_t C[][SIZE], volatile __uint64_t D[][SIZE])
 
 void matmul(volatile __uint64_t A[][SIZE], volatile __uint64_t B[][SIZE])
 {
+	int acceses = 0;
 	int rowA, colB, idx;
 
 	for (rowA = 0; rowA < SIZE; rowA++) {
 		for (colB = 0; colB < SIZE; colB++) {
 			for (idx = 0; idx < SIZE; idx++) {
+				acceses++;
 				C[rowA][colB] += A[rowA][idx] * B[idx][colB];
 			}
 		}
 	}
+	printf("Accesses: %i", acceses);
 }
 
 int main(int argc, char **argv)

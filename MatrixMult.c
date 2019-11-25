@@ -90,20 +90,26 @@ int main(int argc, char **argv)
 	init(A, B);
 	memset((__uint64_t**)C, 0, sizeof(__uint64_t) * SIZE * SIZE);
 	memset((__uint64_t**)D, 0, sizeof(__uint64_t) * SIZE * SIZE);
-	
-	// transpose(B);
 
 	t = clock();
 	matmul(A, B);
-	// matmulTranspose(A,B);
 	t = clock() - t;
 	time_taken = ((double)t)/CLOCKS_PER_SEC; // in seconds
 
-	transpose(B);
-	matmulTranspose(A,B);
-	verify(C,D);
-	
 	printf("Matmul took %f seconds to execute \n", time_taken);
+	
+	transpose(B);
+	// matmulTranspose(A,B);
+	// verify(C,D);
+	
+	t = clock();
+	matmulTranspose(A,B);
+	t = clock() - t;
+	time_taken = ((double)t)/CLOCKS_PER_SEC; // in seconds
+
+	verify(C,D);
+
+	printf("matmulTranspose took %f seconds to execute \n", time_taken);
 }
 
 

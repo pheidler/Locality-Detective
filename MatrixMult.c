@@ -9,6 +9,8 @@
 volatile __uint64_t A[SIZE][SIZE];
 volatile __uint64_t B[SIZE][SIZE];
 volatile __uint64_t C[SIZE][SIZE];
+volatile __uint64_t D[SIZE][SIZE];
+
 
 void init(volatile __uint64_t A[][SIZE], volatile __uint64_t B[][SIZE])
 {
@@ -30,6 +32,7 @@ int verify(volatile __uint64_t C[][SIZE], volatile __uint64_t D[][SIZE])
 		for (r = 0; r < SIZE; r++) {
 			if (C[r][c] != D [r][c]) {
 				printf("error!\n");
+				printf("%d, %d", r, c);
 				return -1;
 			}
 			
@@ -51,6 +54,30 @@ void matmul(volatile __uint64_t A[][SIZE], volatile __uint64_t B[][SIZE])
 	}
 }
 
+void transpose(volatile __uint64_t B[][SIZE])
+{
+	int row, col, idx;
+
+	for (row = 0; row < SIZE-1; row++) {
+		for (col = row+1; col < SIZE; col++) {
+			B[row][col] = B[col][row];
+		}
+	}
+}
+
+void matmulTranspose(volatile __uint64_t A[][SIZE], volatile __uint64_t B[][SIZE])
+{
+	int rowA, rowB, idx;
+
+	for (rowA = 0; rowA < SIZE; rowA++) {
+		for(rowB = 0; rowB < SIZE; rowB++) {
+			for (idx = 0; idx < SIZE; idx++) {
+				D[rowA][rowB] += A[rowA][idx] * B[rowA][idx];
+			}
+		}
+	}
+}
+
 int main(int argc, char **argv)
 {
 	clock_t t;
@@ -58,11 +85,19 @@ int main(int argc, char **argv)
 
 	init(A, B);
 	memset((__uint64_t**)C, 0, sizeof(__uint64_t) * SIZE * SIZE);
+	memset((__uint64_t**)D, 0, sizeof(__uint64_t) * SIZE * SIZE);
 	
+	// transpose(B);
+
 	t = clock();
 	matmul(A, B);
+	// matmulTranspose(A,B);
 	t = clock() - t;
 	time_taken = ((double)t)/CLOCKS_PER_SEC; // in seconds
+
+	transpose(B);
+	matmulTranspose(A,B);
+	verify(C,D);
 	
 	printf("Matmul took %f seconds to execute \n", time_taken);
 }

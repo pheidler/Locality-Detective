@@ -61,9 +61,9 @@ void transpose(volatile __uint64_t B[][SIZE])
 {
 	int row, col, idx;
 
-	for (row = 0; row < SIZE-1; row++) {
+	for (row = 0; row < SIZE; row++) {
 		for (col = row+1; col < SIZE; col++) {
-			B[row][col] = B[col][row];
+			B[col][row] = B[row][col];
 		}
 	}
 }
@@ -75,7 +75,7 @@ void matmulTranspose(volatile __uint64_t A[][SIZE], volatile __uint64_t B[][SIZE
 	for (rowA = 0; rowA < SIZE; rowA++) {
 		for(rowB = 0; rowB < SIZE; rowB++) {
 			for (idx = 0; idx < SIZE; idx++) {
-				D[rowA][rowB] += A[rowA][idx] * B[rowA][idx];
+				D[rowA][rowB] += A[rowA][idx] * B[rowB][idx];
 			}
 		}
 	}

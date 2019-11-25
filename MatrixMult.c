@@ -62,13 +62,10 @@ void transpose(volatile __uint64_t B[][SIZE])
 
 	for (row = 0; row < SIZE; row++) {
 		for (col = row+1; col < SIZE; col++) {
-<<<<<<< HEAD
 			B[col][row] = B[row][col];
-=======
 			temp = B[row][col];
 			B[row][col] = B[col][row];
 			B[col][row] = temp;
->>>>>>> ebfd12e3d40ae3a4c4c853e346b4d8a603c4f9ea
 		}
 	}
 }

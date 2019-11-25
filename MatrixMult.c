@@ -33,7 +33,6 @@ int verify(volatile __uint64_t C[][SIZE], volatile __uint64_t D[][SIZE])
 			// printf("%llu, %llu\n", C[r][c], D[r][c]);
 			if (C[r][c] != D [r][c]) {
 				printf("error!\n");
-				printf("%d, %d\n", r, c);
 				return -1;
 			}
 			

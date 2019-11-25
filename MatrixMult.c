@@ -30,9 +30,10 @@ int verify(volatile __uint64_t C[][SIZE], volatile __uint64_t D[][SIZE])
 
 	for (c = 0; c < SIZE; c++) {
 		for (r = 0; r < SIZE; r++) {
+			// printf("%llu, %llu\n", C[r][c], D[r][c]);
 			if (C[r][c] != D [r][c]) {
 				printf("error!\n");
-				printf("%d, %d", r, c);
+				printf("%d, %d\n", r, c);
 				return -1;
 			}
 			
@@ -43,27 +44,27 @@ int verify(volatile __uint64_t C[][SIZE], volatile __uint64_t D[][SIZE])
 
 void matmul(volatile __uint64_t A[][SIZE], volatile __uint64_t B[][SIZE])
 {
-	int acceses = 0;
 	int rowA, colB, idx;
 
 	for (rowA = 0; rowA < SIZE; rowA++) {
 		for (colB = 0; colB < SIZE; colB++) {
 			for (idx = 0; idx < SIZE; idx++) {
-				acceses++;
 				C[rowA][colB] += A[rowA][idx] * B[idx][colB];
 			}
 		}
 	}
-	printf("Accesses: %i", acceses);
 }
 
 void transpose(volatile __uint64_t B[][SIZE])
 {
 	int row, col, idx;
+	__uint64_t temp;
 
-	for (row = 0; row < SIZE-1; row++) {
+	for (row = 0; row < SIZE; row++) {
 		for (col = row+1; col < SIZE; col++) {
+			temp = B[row][col];
 			B[row][col] = B[col][row];
+			B[col][row] = temp;
 		}
 	}
 }
@@ -75,7 +76,7 @@ void matmulTranspose(volatile __uint64_t A[][SIZE], volatile __uint64_t B[][SIZE
 	for (rowA = 0; rowA < SIZE; rowA++) {
 		for(rowB = 0; rowB < SIZE; rowB++) {
 			for (idx = 0; idx < SIZE; idx++) {
-				D[rowA][rowB] += A[rowA][idx] * B[rowA][idx];
+				D[rowA][rowB] += A[rowA][idx] * B[rowB][idx];
 			}
 		}
 	}

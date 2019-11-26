@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <stdlib.h>
+#include <math.h> 
 
 #define SIZE 1024
 
@@ -10,7 +11,7 @@ volatile __uint64_t A[SIZE][SIZE];
 volatile __uint64_t B[SIZE][SIZE];
 volatile __uint64_t C[SIZE][SIZE];
 volatile __uint64_t D[SIZE][SIZE];
-volatile __uint64_t E[SIZE][SIZE];
+// volatile __uint64_t E[SIZE][SIZE];
 
 
 void init(volatile __uint64_t A[][SIZE], volatile __uint64_t B[][SIZE])
@@ -57,18 +58,21 @@ void matmul(volatile __uint64_t A[][SIZE], volatile __uint64_t B[][SIZE])
 
 void transpose(volatile __uint64_t B[][SIZE])
 {
-	int row, col, idx;
+	int row, col;
 	__uint64_t temp;
 
 	for (row = 0; row < SIZE; row++) {
 		for (col = row+1; col < SIZE; col++) {
-			temp = B[row][col];
-			B[row][col] = B[col][row];
+			temp = B[row][col]; // temporarily store value at B[row][col]
+			B[row][col] = B[col][row]; // swap values across diaganol of matrix
 			B[col][row] = temp;
 		}
 	}
 }
 
+// Modified matrix multiplication function to exploit spatial locality 
+// of transposed B. Yields the same result of A*B but multiplies each row of 
+// A with each row of B.
 void matmulTranspose(volatile __uint64_t A[][SIZE], volatile __uint64_t B[][SIZE])
 {
 	int rowA, rowB, idx;
@@ -82,19 +86,23 @@ void matmulTranspose(volatile __uint64_t A[][SIZE], volatile __uint64_t B[][SIZE
 	}
 }
 
+
+// Modified version of matrix multiplication that uses a tiling approach to 
+// exploit temporal locality. Takes tileSize as an argument to build tiles 
+// that are tileSize x tileSize large. 
 void matmulTile(volatile __uint64_t A[][SIZE], volatile __uint64_t B[][SIZE], int tileSize)
 {
 	int i, j, k, J, K;
 
-	for(k = 0; k < SIZE; k+=tileSize)
+	for(k = 0; k < SIZE; k+=tileSize) // iterate over tile row
 	{
-		for(j = 0; j < SIZE; j+=tileSize)
+		for(j = 0; j < SIZE; j+=tileSize) // iterate over tile column
 		{
-			for(i = 0; i < SIZE; i++)
+			for(i = 0; i < SIZE; i++) // iterate over entire matrix row
 			{
-				for(J = j; J < (((j+tileSize) < SIZE)?(j+tileSize):SIZE); J++)
+				for(J = j; J < (((j+tileSize) < SIZE)?(j+tileSize):SIZE); J++) // adjust param to iterate over each row in each tile
 				{
-					for(K = k; K < (((k+tileSize) < SIZE)?(k+tileSize):SIZE); K++)
+					for(K = k; K < (((k+tileSize) < SIZE)?(k+tileSize):SIZE); K++) // adjust param to iterate over each col in each tile
 					{
 						D[i][J] += A[i][K] * B[K][J];
 					}
@@ -112,7 +120,6 @@ int main(int argc, char **argv)
 	init(A, B);
 	memset((__uint64_t**)C, 0, sizeof(__uint64_t) * SIZE * SIZE);
 	memset((__uint64_t**)D, 0, sizeof(__uint64_t) * SIZE * SIZE);
-	// memset((__uint64_t**)E, 0, sizeof(__uint64_t) * SIZE * SIZE);
 
 	t = clock();
 	matmul(A, B);
@@ -121,27 +128,33 @@ int main(int argc, char **argv)
 
 	printf("Matmul took %f seconds to execute \n", time_taken);
 
-	t = clock();
-	matmulTile(A, B, 16);
-	t = clock() - t;
-	time_taken = ((double)t)/CLOCKS_PER_SEC; // in seconds
+	for(int i = 0;i<=10;i++)
+	{
+		int b = pow(2,i); // b = tile size
+		// reset D to all 0's to verify each instance of matmulTile produces
+		// correct output
+		memset((__uint64_t**)D, 0, sizeof(__uint64_t) * SIZE * SIZE);
+		t = clock();
+		matmulTile(A, B, b);
+		t = clock() - t;
+		time_taken = ((double)t)/CLOCKS_PER_SEC; // in seconds
 
-	verify(C,D);
+		verify(C,D); // check D is correct (prints "error!" if wrong)
 
-	printf("MatmulTile took %f seconds to execute \n", time_taken);
-	
+		printf("MatmulTile with %d tiles took %f seconds to execute \n", b, time_taken);
+	}
 
+
+	// reset D
 	memset((__uint64_t**)D, 0, sizeof(__uint64_t) * SIZE * SIZE);
 	transpose(B);
-	// matmulTranspose(A,B);
-	// verify(C,D);
 	
 	t = clock();
 	matmulTranspose(A,B);
 	t = clock() - t;
 	time_taken = ((double)t)/CLOCKS_PER_SEC; // in seconds
 
-	verify(C,D);
+	verify(C,D); // check D is correct (prints "error!" if wrong)
 
 	printf("matmulTranspose took %f seconds to execute \n", time_taken);
 }

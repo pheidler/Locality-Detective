@@ -1,1 +1,25 @@
-nick sux
+CSE 120 
+Homework Assignment 5
+Peter Heidler, Nicholas Amendola
+
+
+Makefile - Makes MatrixMult and executes program.
+	usage: 
+		make		makes MatrixMult
+		make clean	removes binaries
+
+MatrixMult.c - Initializes matrices A and B with random values. Matrices A, B, and C are all 1024x1024 matrices. Computes C = A*B three ways: (1) using matmult(A,B) which uses the naive matrix multiplication method, (2) using matmultTranspose(A,transpose(B)) which uses A and the transpose of B to calculate A*B and store it in D, utilizing spatial locality, (3) using matmultTile(A,B,b) which uses tiling to break A and B into bxb tiles (or sub matrices) and multiplies the results iteratively to store A*B in D, utilizing temporal locality. 
+	output:
+		execution time of matmult(A,B)
+		execution time of matmultTile(A,B,1)
+		execution time of matmultTile(A,B,2)
+		execution time of matmultTile(A,B,4)
+		execution time of matmultTile(A,B,8)
+		execution time of matmultTile(A,B,16)
+		execution time of matmultTile(A,B,32)
+		execution time of matmultTile(A,B,64)
+		execution time of matmultTile(A,B,128)
+		execution time of matmultTile(A,B,256)
+		execution time of matmultTile(A,B,512)
+		execution time of matmultTile(A,B,1024)
+		execution time of matmultTranspose(A,transpose(B))
